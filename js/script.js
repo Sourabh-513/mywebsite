@@ -96,7 +96,7 @@ class ThemeManager {
 }
 
 // =====================================
-// PWA INSTALLATION MANAGER
+// PWA INSTALLATION MANAGER (iOS Fixed)
 // =====================================
 
 class PWAManager {
@@ -110,7 +110,7 @@ class PWAManager {
   }
 
   bindEvents() {
-    // Listen for PWA install prompt
+    // Listen for PWA install prompt (Android/Desktop only)
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -146,6 +146,9 @@ class PWAManager {
 
   showInstallPopup() {
     if (elements.installPopup && !this.isPWADismissed()) {
+      // Update button text and popup content based on device
+      this.updatePopupForDevice();
+      
       elements.installPopup.classList.remove('hidden');
       elements.installPopup.classList.add('show');
       
@@ -154,6 +157,64 @@ class PWAManager {
         elements.installPopup.style.transform = 'translateY(0)';
       }, 100);
     }
+  }
+
+  updatePopupForDevice() {
+    const isIOS = this.isIOSDevice();
+    const isStandalone = this.isPWAInstalled();
+    
+    if (isStandalone) return; // Don't show if already installed
+    
+    const popupTitle = elements.installPopup.querySelector('h3');
+    const popupText = elements.installPopup.querySelector('p');
+    const installButton = elements.installBtn;
+    
+    if (isIOS) {
+      // iOS-specific instructions
+      popupTitle.textContent = 'Add to Home Screen';
+      popupText.innerHTML = `Tap the <strong>Share</strong> button and select "Add to Home Screen"`;
+      installButton.textContent = 'Got it!';
+      installButton.style.background = 'var(--success-color)';
+    } else {
+      // Android/Desktop instructions
+      popupTitle.textContent = 'Install Dark Kokan App';
+      popupText.textContent = 'Install Dark Kokan for the best mobile experience';
+      installButton.textContent = 'Install App';
+      installButton.style.background = 'var(--accent-gradient)';
+    }
+  }
+
+  async installPWA() {
+    const isIOS = this.isIOSDevice();
+    
+    if (isIOS) {
+      // For iOS, just dismiss the popup since we showed instructions
+      this.dismissInstallPopup();
+      return;
+    }
+
+    // For Android/Desktop, use the native prompt
+    if (!deferredPrompt) {
+      this.dismissInstallPopup();
+      return;
+    }
+
+    try {
+      const result = await deferredPrompt.prompt();
+      console.log('PWA install prompt result:', result);
+      
+      if (result.outcome === 'accepted') {
+        console.log('User accepted PWA installation');
+        Analytics.trackPWAInstall();
+      } else {
+        console.log('User dismissed PWA installation');
+      }
+    } catch (error) {
+      console.error('PWA installation error:', error);
+    }
+
+    this.hideInstallPopup();
+    deferredPrompt = null;
   }
 
   hideInstallPopup() {
@@ -167,26 +228,6 @@ class PWAManager {
     }
   }
 
-  async installPWA() {
-    if (!deferredPrompt) return;
-
-    try {
-      const result = await deferredPrompt.prompt();
-      console.log('PWA install prompt result:', result);
-      
-      if (result.outcome === 'accepted') {
-        console.log('User accepted PWA installation');
-      } else {
-        console.log('User dismissed PWA installation');
-      }
-    } catch (error) {
-      console.error('PWA installation error:', error);
-    }
-
-    this.hideInstallPopup();
-    deferredPrompt = null;
-  }
-
   dismissInstallPopup() {
     localStorage.setItem(CONFIG.PWA_DISMISSED_KEY, 'true');
     this.hideInstallPopup();
@@ -197,10 +238,21 @@ class PWAManager {
   }
 
   isPWAInstalled() {
+    // Check for standalone mode (PWA installed)
     return window.matchMedia('(display-mode: standalone)').matches || 
            window.navigator.standalone === true;
   }
+
+  isIOSDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  isAndroidDevice() {
+    return /Android/.test(navigator.userAgent);
+  }
 }
+
 
 // =====================================
 // YOUTUBE PLAYER MANAGER

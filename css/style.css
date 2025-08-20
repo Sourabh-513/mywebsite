@@ -166,11 +166,26 @@ body {
   box-shadow: 0 2px 8px var(--shadow-light);
 }
 
+.brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .brand-name {
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.brand-tagline {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .header-actions {
@@ -545,6 +560,10 @@ body {
     font-size: var(--font-size-lg);
   }
   
+  .brand-tagline {
+    font-size: var(--font-size-xs);
+  }
+  
   .theme-toggle {
     width: 40px;
     height: 40px;
@@ -603,6 +622,10 @@ body {
   
   .brand-name {
     font-size: var(--font-size-base);
+  }
+  
+  .brand-tagline {
+    font-size: 10px;
   }
   
   .header-actions {

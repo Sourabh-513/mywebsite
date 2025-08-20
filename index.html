@@ -1,173 +1,175 @@
-<!--[if IE 8 ]><html class="ie" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!-->
 <!DOCTYPE html>
-<html lang="en-US">
-    <!--<![endif]-->
-
-    <head>
-        <meta charset="utf-8">
-        <title>
-            Website Coming Soon..!
-        </title><!-- Behavioral Meta Data -->
-        <meta content="yes" name="apple-mobile-web-app-capable">
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"><!-- Core Meta Data -->
-        <meta content="DksWebsite" name="author">
-        <meta content="Designed by Dark Kokan Creators!" name="description">
-        <meta content="Comming Soon, Responsive, Landing Page, One Page" name="keywords"><!-- Open Graph Meta Data -->
-        <meta content="Designed by Dark Kokan Creators!">
-        <meta content="DksWebsite">
-        <meta content="DksWebsite">
-        <meta content="website">
-        <meta content="index.html"><!-- Twitter Card Meta Data -->
-        <meta content="summary" name="twitter:card">
-        <meta content="@DksWebsite" name="twitter:site">
-        <meta content="@DksWebsite" name="twitter:creator">
-        <meta content="DksWebsite" name="twitter:title">
-        <meta content="Designed by Dark Kokan Creators!" name="twitter:description">
-
-        <link href="favicon.png" rel="shortcut icon" type="image/png">
-
-        <!--[if lt IE 9]>
-            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
-        
-        <!-- CSS -->
-        <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,900' rel='stylesheet' type='text/css'><!-- Styles -->
-        <link href="css/loader.css" rel="stylesheet" type="text/css">
-        <link href="css/normalize.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="css/font-awesome.min.css">
-        <link href="css/style.css" rel="stylesheet" type="text/css">
-        <!--[if lt IE 9]>
-            <link rel="stylesheet" type="text/css" href="css/ie.css" />
-        <![endif]-->
-        <!-- Javascript -->
-
-        <script src="js/jquery.js"></script>
-    </head>
-    <body>
-        <div class="preloader">
-            <div class="loading">
-                <h2>
-                    Loading..
-                </h2>
-                <span class="progress"></span>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1c1c1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dark Kokan">
+    
+    <title>Dark Kokan - Storyteller</title>
+    <meta name="description" content="Premium horror stories and mysterious tales from Dark Kokan">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://www.youtube.com">
+    <link rel="preconnect" href="https://i.ytimg.com">
+    
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- App Install Banner -->
+    <div id="installBanner" class="install-banner hidden">
+        <div class="install-content">
+            <div class="phone-animation">
+                <div class="phone-old">
+                    <div class="phone-screen">
+                        <div class="browser-bar"></div>
+                        <div class="website-preview"></div>
+                    </div>
+                </div>
+                <div class="transfer-arrow">→</div>
+                <div class="phone-new">
+                    <div class="phone-screen">
+                        <div class="app-icon"></div>
+                        <div class="app-name">Dark Kokan</div>
+                    </div>
+                </div>
+            </div>
+            <h3>Add to Home Screen</h3>
+            <p>Install Dark Kokan for the best mobile experience</p>
+            <div class="install-buttons">
+                <button id="installBtn" class="btn-primary">Add to Home Screen</button>
+                <button id="dismissBtn" class="btn-secondary">Maybe Later</button>
             </div>
         </div>
+    </div>
 
-        <div class="wrapper">
-            <ul class="scene unselectable" data-friction-x="0.1" data-friction-y="0.1" data-scalar-x="25" data-scalar-y="15" id="scene">
-                <li class="layer" data-depth="0.00">
-                </li>
-                <!-- BG -->
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <img src="assets/images/logo.png" alt="Dark Kokan Logo" class="logo">
+                <div class="brand-info">
+                    <h1 class="brand-name">Dark Kokan</h1>
+                    <span class="brand-subtitle">Storyteller</span>
+                </div>
+            </div>
+            <button class="subscribe-btn" onclick="window.open('https://www.youtube.com/@darkkokan', '_blank')">
+                Subscribe
+            </button>
+        </header>
 
-                <li class="layer" data-depth="0.10">
-                    <div class="background">
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="videos-grid">
+                <!-- Video 1 -->
+                <div class="video-card" data-video-id="PCKNptxYuSw">
+                    <div class="video-thumbnail">
+                        <img src="https://i.ytimg.com/vi/PCKNptxYuSw/maxresdefault.jpg" 
+                             alt="सह्याद्री की परछाइयाँ" loading="lazy">
+                        <div class="play-overlay">
+                            <div class="play-button">▶</div>
+                        </div>
+                        <div class="video-duration">15:32</div>
                     </div>
-                </li>
-
-                <!-- Hero -->
-
-                <li class="layer" data-depth="0.20">
-                    <div class="title">
-                        <h2>
-                            DK'S UNISEX SALON!
-                        </h2>
-                        <span class="line"></span>
+                    <div class="video-info">
+                        <h3 class="video-title">सह्याद्री की परछाइयाँ</h3>
+                        <p class="video-description">हंसी-मज़ाक से शुरू हुई बाइक यात्रा, पर अंधेरी रात ने इसे बदल दिया एक भयानक कहानी में…</p>
+                        <div class="video-actions">
+                            <button class="btn-watch-now" onclick="playVideo('PCKNptxYuSw')">Watch Now</button>
+                            <button class="btn-youtube" onclick="openOnYouTube('PCKNptxYuSw')">Watch on YouTube</button>
+                        </div>
                     </div>
-                </li>
+                </div>
 
-                <li class="layer" data-depth="0.25">
-                    <div class="sphere">
-                        <img alt="sphere" src="images/sphere.png">
+                <!-- Video 2 -->
+                <div class="video-card" data-video-id="WiW2dORxhEk">
+                    <div class="video-thumbnail">
+                        <img src="https://i.ytimg.com/vi/WiW2dORxhEk/maxresdefault.jpg" 
+                             alt="Haunted Alexa" loading="lazy">
+                        <div class="play-overlay">
+                            <div class="play-button">▶</div>
+                        </div>
+                        <div class="video-duration">12:45</div>
                     </div>
-                </li>
-
-                <li class="layer" data-depth="0.30">
-                    <div class="hero">
-                        <h1 id="countdown">
-                            Website Coming Soon..!
-                        </h1>
-
-                        <p class="sub-title">
-                            Website Coming Soon..!
-                        </p>
+                    <div class="video-info">
+                        <h3 class="video-title">Haunted Alexa</h3>
+                        <p class="video-description">रात में, हॉरर मूवी के बाद Alexa ने कुछ कहा… जिसे सुनकर रोंगटे खड़े हो गए।</p>
+                        <div class="video-actions">
+                            <button class="btn-watch-now" onclick="playVideo('WiW2dORxhEk')">Watch Now</button>
+                            <button class="btn-youtube" onclick="openOnYouTube('WiW2dORxhEk')">Watch on YouTube</button>
+                        </div>
                     </div>
-                </li>
-                <!-- Flakes -->
+                </div>
 
-                <li class="layer" data-depth="0.40">
-                    <div class="depth-1 flake1">
-                        <img alt="flake" src="images/flakes/depth1/flakes1.png">
+                <!-- Video 3 -->
+                <div class="video-card" data-video-id="r1QN2pbuIMs">
+                    <div class="video-thumbnail">
+                        <img src="https://i.ytimg.com/vi/r1QN2pbuIMs/maxresdefault.jpg" 
+                             alt="कोकण का चकवा - छलावा" loading="lazy">
+                        <div class="play-overlay">
+                            <div class="play-button">▶</div>
+                        </div>
+                        <div class="video-duration">18:20</div>
                     </div>
+                    <div class="video-info">
+                        <h3 class="video-title">कोकण का चकवा - छलावा</h3>
+                        <p class="video-description">कोकण में हर गाँव में चकवा की दास्तानें मशहूर हैं। कहते हैं चकवा रास्ता भटकाता है…</p>
+                        <div class="video-actions">
+                            <button class="btn-watch-now" onclick="playVideo('r1QN2pbuIMs')">Watch Now</button>
+                            <button class="btn-youtube" onclick="openOnYouTube('r1QN2pbuIMs')">Watch on YouTube</button>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="depth-1 flake2">
-                        <img alt="flake" src="images/flakes/depth1/flakes2.png">
+                <!-- Video 4 -->
+                <div class="video-card" data-video-id="F5oucUXXwVQ">
+                    <div class="video-thumbnail">
+                        <img src="https://i.ytimg.com/vi/F5oucUXXwVQ/maxresdefault.jpg" 
+                             alt="डार्क वेब का रहस्य" loading="lazy">
+                        <div class="play-overlay">
+                            <div class="play-button">▶</div>
+                        </div>
+                        <div class="video-duration">22:10</div>
                     </div>
+                    <div class="video-info">
+                        <h3 class="video-title">डार्क वेब का रहस्य</h3>
+                        <p class="video-description">एक लड़के ने डार्क वेब पर देखा कुछ ऐसा, जो इंसानी समझ से परे था, तंत्र का प्रयोग…</p>
+                        <div class="video-actions">
+                            <button class="btn-watch-now" onclick="playVideo('F5oucUXXwVQ')">Watch Now</button>
+                            <button class="btn-youtube" onclick="openOnYouTube('F5oucUXXwVQ')">Watch on YouTube</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
 
-                    <div class="depth-1 flake3">
-                        <img alt="flake" src="images/flakes/depth1/flakes3.png">
-                    </div>
-
-                    <div class="depth-1 flake4">
-                        <img alt="flake" src="images/flakes/depth1/flakes4.png">
-                    </div>
-                </li>
-
-                <li class="layer" data-depth="0.50">
-                    <div class="depth-2 flake1">
-                        <img alt="flake" src="images/flakes/depth2/flakes1.png">
-                    </div>
-
-                    <div class="depth-2 flake2">
-                        <img alt="flake" src="images/flakes/depth2/flakes2.png">
-                    </div>
-                </li>
-
-                <li class="layer" data-depth="0.60">
-                    <div class="depth-3 flake1">
-                        <img alt="flake" src="images/flakes/depth3/flakes1.png">
-                    </div>
-
-                    <div class="depth-3 flake2">
-                        <img alt="flake" src="images/flakes/depth3/flakes2.png">
-                    </div>
-
-                    <div class="depth-3 flake3">
-                        <img alt="flake" src="images/flakes/depth3/flakes3.png">
-                    </div>
-
-                    <div class="depth-3 flake4">
-                        <img alt="flake" src="images/flakes/depth3/flakes4.png">
-                    </div>
-                </li>
-
-                <li class="layer" data-depth="0.80">
-                    <div class="depth-4">
-                        <img alt="flake" src="images/flakes/depth4/flakes.png">
-                    </div>
-                </li>
-
-                <li class="layer" data-depth="1.00">
-                    <div class="depth-5">
-                        <img alt="flake" src="images/flakes/depth5/flakes.png">
-                    </div>
-                </li>
-                <!-- Contact -->
-
-                <li class="layer" data-depth="0.20">
-                    <div class="contact">
-                       
-                        Site by <a href="https://www.youtube.com/@Darkkokan" target="_blank">Dark kokan storyteller</a>
-                        <a class="mail" href="mailto:info@example.com?subject=Hi%20DksWebsite!">Studio</a>
-                    </div>
-                </li>
-            </ul>
+        <!-- Video Player Modal -->
+        <div id="videoModal" class="video-modal hidden">
+            <div class="modal-backdrop" onclick="closeVideoModal()"></div>
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeVideoModal()">×</button>
+                <div class="video-player-container">
+                    <iframe id="videoPlayer" 
+                            src="" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <!-- Javascript -->
-        <script src="js/plugins.js"></script> 
-        <script src="js/jquery.countdown.min.js"></script> 
-        <script src="js/main.js"></script>
-
-    </body>
+    <script src="js/script.js"></script>
+</body>
 </html>

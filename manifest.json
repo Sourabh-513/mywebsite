@@ -1,0 +1,110 @@
+{
+  "name": "Dark Kokan - Horror Stories",
+  "short_name": "Dark Kokan",
+  "description": "Experience spine-chilling horror stories and mysterious tales from Dark Kokan YouTube channel",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#007aff",
+  "background_color": "#000000",
+  "scope": "/",
+  "lang": "en-US",
+  
+  "icons": [
+    {
+      "src": "assets/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/images/logo.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  
+  "screenshots": [
+    {
+      "src": "assets/images/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of Dark Kokan horror stories"
+    },
+    {
+      "src": "assets/images/screenshot-desktop.png", 
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop view of Dark Kokan horror stories"
+    }
+  ],
+  
+  "categories": [
+    "entertainment",
+    "lifestyle",
+    "video"
+  ],
+  
+  "shortcuts": [
+    {
+      "name": "Watch Latest Video",
+      "short_name": "Latest",
+      "description": "Watch the latest horror story",
+      "url": "/?utm_source=pwa_shortcut&utm_medium=latest",
+      "icons": [
+        {
+          "src": "assets/images/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Subscribe on YouTube", 
+      "short_name": "Subscribe",
+      "description": "Subscribe to Dark Kokan channel",
+      "url": "https://www.youtube.com/@darkkokan",
+      "icons": [
+        {
+          "src": "assets/images/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.google.android.youtube",
+      "id": "com.google.android.youtube"
+    }
+  ],
+  
+  "prefer_related_applications": false,
+  
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  
+  "handle_links": "preferred",
+  
+  "protocol_handlers": [
+    {
+      "protocol": "web+darkkokan",
+      "url": "/?video=%s"
+    }
+  ]
+}

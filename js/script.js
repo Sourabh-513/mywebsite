@@ -1,484 +1,410 @@
-/* ============================================
-   DARK KOKAN - MOBILE APP WEBSITE
-   Premium iOS-style JavaScript Implementation
-============================================ */
+// =====================================
+// GLOBAL VARIABLES & CONFIGURATION
+// =====================================
 
-class DarkKokanApp {
+let deferredPrompt;
+let player;
+let isPlayerReady = false;
+
+// Configuration
+const CONFIG = {
+  YOUTUBE_API_KEY: 'YOUR_API_KEY', // Optional: for advanced features
+  INSTALL_PROMPT_DELAY: 3000, // 3 seconds
+  THEME_STORAGE_KEY: 'darkkokan-theme',
+  PWA_DISMISSED_KEY: 'darkkokan-pwa-dismissed',
+  YOUTUBE_CHANNEL_URL: 'https://www.youtube.com/@darkkokan'
+};
+
+// =====================================
+// DOM ELEMENTS
+// =====================================
+
+const elements = {
+  themeToggle: document.getElementById('theme-toggle'),
+  themeIcon: document.querySelector('.theme-icon'),
+  installPopup: document.getElementById('install-popup'),
+  installBtn: document.getElementById('install-btn'),
+  cancelInstall: document.getElementById('cancel-install'),
+  videoModal: document.getElementById('video-modal'),
+  modalClose: document.querySelector('.modal-close'),
+  videoCards: document.querySelectorAll('.video-card'),
+  watchNowBtns: document.querySelectorAll('.watch-now'),
+  subscribeBtn: document.querySelector('.subscribe-btn')
+};
+
+// =====================================
+// THEME MANAGEMENT
+// =====================================
+
+class ThemeManager {
   constructor() {
-    this.deferredPrompt = null;
-    this.isInstalled = false;
-    this.currentVideoId = null;
-    
+    this.currentTheme = this.getStoredTheme();
     this.init();
   }
 
-  /* ============================================
-     INITIALIZATION
-  ============================================ */
   init() {
-    this.setupEventListeners();
-    this.checkInstallStatus();
-    this.setupPWA();
-    this.handleSystemTheme();
-    this.preloadVideoThumbnails();
-    
-    console.log('🎬 Dark Kokan App initialized');
+    this.applyTheme(this.currentTheme);
+    this.updateThemeIcon();
+    this.bindEvents();
   }
 
-  /* ============================================
-     EVENT LISTENERS SETUP
-  ============================================ */
-  setupEventListeners() {
-    // Install banner events
-    const installBtn = document.getElementById('installBtn');
-    const dismissBtn = document.getElementById('dismissBtn');
+  getStoredTheme() {
+    const stored = localStorage.getItem(CONFIG.THEME_STORAGE_KEY);
+    if (stored) return stored;
     
-    if (installBtn) installBtn.addEventListener('click', () => this.handleInstall());
-    if (dismissBtn) dismissBtn.addEventListener('click', () => this.dismissInstallBanner());
-
-    // Video card click events
-    document.querySelectorAll('.video-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        // Don't trigger if clicking on buttons
-        if (e.target.closest('.video-actions')) return;
-        
-        const videoId = card.dataset.videoId;
-        if (videoId) {
-          this.playVideo(videoId);
-        }
-      });
-    });
-
-    // Modal close events
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('.modal-backdrop') || e.target.matches('.modal-close')) {
-        this.closeVideoModal();
-      }
-    });
-
-    // Keyboard events
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        this.closeVideoModal();
-        this.dismissInstallBanner();
-      }
-    });
-
-    // Prevent context menu on long press (iOS style)
-    document.addEventListener('contextmenu', (e) => {
-      if (e.target.closest('.video-card') || e.target.closest('button')) {
-        e.preventDefault();
-      }
-    });
-
-    // Handle visibility change (pause videos when hidden)
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && this.currentVideoId) {
-        this.pauseCurrentVideo();
-      }
-    });
-
-    // Handle online/offline status
-    window.addEventListener('online', () => this.showNetworkStatus('online'));
-    window.addEventListener('offline', () => this.showNetworkStatus('offline'));
+    // Check system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
-  /* ============================================
-     PWA INSTALLATION HANDLING
-  ============================================ */
-  setupPWA() {
-    // Listen for the beforeinstallprompt event
+  applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    this.currentTheme = theme;
+    localStorage.setItem(CONFIG.THEME_STORAGE_KEY, theme);
+  }
+
+  updateThemeIcon() {
+    if (elements.themeIcon) {
+      elements.themeIcon.textContent = this.currentTheme === 'dark' ? '☀️' : '🌙';
+    }
+  }
+
+  toggleTheme() {
+    const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+    this.applyTheme(newTheme);
+    this.updateThemeIcon();
+    
+    // Smooth transition effect
+    document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    setTimeout(() => {
+      document.body.style.transition = '';
+    }, 300);
+  }
+
+  bindEvents() {
+    if (elements.themeToggle) {
+      elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+    }
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem(CONFIG.THEME_STORAGE_KEY)) {
+        this.applyTheme(e.matches ? 'dark' : 'light');
+        this.updateThemeIcon();
+      }
+    });
+  }
+}
+
+// =====================================
+// PWA INSTALLATION MANAGER
+// =====================================
+
+class PWAManager {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    this.bindEvents();
+    this.showInstallPrompt();
+  }
+
+  bindEvents() {
+    // Listen for PWA install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
-      console.log('💾 PWA install prompt available');
       e.preventDefault();
-      this.deferredPrompt = e;
-      
-      // Show install banner after a delay if not already installed
-      if (!this.isInstalled) {
-        setTimeout(() => this.showInstallBanner(), 3000);
-      }
+      deferredPrompt = e;
+      this.showInstallPopup();
     });
+
+    // Install button click
+    if (elements.installBtn) {
+      elements.installBtn.addEventListener('click', () => this.installPWA());
+    }
+
+    // Cancel install
+    if (elements.cancelInstall) {
+      elements.cancelInstall.addEventListener('click', () => this.dismissInstallPopup());
+    }
 
     // Listen for successful installation
     window.addEventListener('appinstalled', () => {
-      console.log('✅ PWA installed successfully');
-      this.isInstalled = true;
-      this.hideInstallBanner();
-      this.showToast('App installed successfully! 🎉');
-      
-      // Store installation status
-      localStorage.setItem('darkKokanInstalled', 'true');
+      console.log('PWA installed successfully');
+      this.hideInstallPopup();
+      deferredPrompt = null;
     });
-
-    // Check if already installed
-    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-      this.isInstalled = true;
-      console.log('📱 Running in standalone mode');
-    }
   }
 
-  checkInstallStatus() {
-    const wasInstalled = localStorage.getItem('darkKokanInstalled');
-    const wasDismissed = localStorage.getItem('installBannerDismissed');
-    const dismissedTime = localStorage.getItem('installBannerDismissedTime');
-    
-    if (wasInstalled === 'true') {
-      this.isInstalled = true;
-    }
-
-    // Show banner again after 7 days if previously dismissed
-    if (wasDismissed === 'true' && dismissedTime) {
-      const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-      if (parseInt(dismissedTime) < weekAgo) {
-        localStorage.removeItem('installBannerDismissed');
-        localStorage.removeItem('installBannerDismissedTime');
+  showInstallPrompt() {
+    // Show install popup after delay if not dismissed and not installed
+    setTimeout(() => {
+      if (!this.isPWADismissed() && !this.isPWAInstalled()) {
+        this.showInstallPopup();
       }
-    }
+    }, CONFIG.INSTALL_PROMPT_DELAY);
   }
 
-  showInstallBanner() {
-    const wasDismissed = localStorage.getItem('installBannerDismissed');
-    
-    if (this.isInstalled || wasDismissed === 'true') {
-      return;
-    }
-
-    const banner = document.getElementById('installBanner');
-    if (banner) {
-      banner.classList.remove('hidden');
+  showInstallPopup() {
+    if (elements.installPopup && !this.isPWADismissed()) {
+      elements.installPopup.classList.remove('hidden');
+      elements.installPopup.classList.add('show');
       
-      // Add entrance animation
-      requestAnimationFrame(() => {
-        banner.style.animation = 'bannerFadeIn 0.3s ease-out';
-      });
-
-      // Track banner shown
-      console.log('📋 Install banner shown');
+      // Add animation
+      setTimeout(() => {
+        elements.installPopup.style.transform = 'translateY(0)';
+      }, 100);
     }
   }
 
-  hideInstallBanner() {
-    const banner = document.getElementById('installBanner');
-    if (banner) {
-      banner.style.animation = 'bannerFadeOut 0.3s ease-out';
-      setTimeout(() => banner.classList.add('hidden'), 300);
+  hideInstallPopup() {
+    if (elements.installPopup) {
+      elements.installPopup.classList.remove('show');
+      elements.installPopup.style.transform = 'translateY(100%)';
+      
+      setTimeout(() => {
+        elements.installPopup.classList.add('hidden');
+      }, 300);
     }
   }
 
-  async handleInstall() {
-    if (!this.deferredPrompt) {
-      this.showToast('Installation not available on this device');
-      return;
-    }
+  async installPWA() {
+    if (!deferredPrompt) return;
 
     try {
-      // Show the install prompt
-      const result = await this.deferredPrompt.prompt();
-      console.log('🎯 Install prompt result:', result.outcome);
-
+      const result = await deferredPrompt.prompt();
+      console.log('PWA install prompt result:', result);
+      
       if (result.outcome === 'accepted') {
-        this.showToast('Installing app... Please wait');
+        console.log('User accepted PWA installation');
       } else {
-        this.showToast('Installation cancelled');
+        console.log('User dismissed PWA installation');
       }
-
-      // Clear the deferred prompt
-      this.deferredPrompt = null;
-      this.hideInstallBanner();
-      
     } catch (error) {
-      console.error('❌ Installation failed:', error);
-      this.showToast('Installation failed. Please try again.');
+      console.error('PWA installation error:', error);
     }
+
+    this.hideInstallPopup();
+    deferredPrompt = null;
   }
 
-  dismissInstallBanner() {
-    this.hideInstallBanner();
-    
-    // Store dismissal with timestamp
-    localStorage.setItem('installBannerDismissed', 'true');
-    localStorage.setItem('installBannerDismissedTime', Date.now().toString());
-    
-    console.log('🚫 Install banner dismissed');
+  dismissInstallPopup() {
+    localStorage.setItem(CONFIG.PWA_DISMISSED_KEY, 'true');
+    this.hideInstallPopup();
   }
 
-  /* ============================================
-     VIDEO PLAYBACK FUNCTIONALITY
-  ============================================ */
-  playVideo(videoId) {
+  isPWADismissed() {
+    return localStorage.getItem(CONFIG.PWA_DISMISSED_KEY) === 'true';
+  }
+
+  isPWAInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           window.navigator.standalone === true;
+  }
+}
+
+// =====================================
+// YOUTUBE PLAYER MANAGER
+// =====================================
+
+class YouTubePlayerManager {
+  constructor() {
+    this.currentVideoId = null;
+    this.init();
+  }
+
+  init() {
+    // YouTube API will call this function when ready
+    window.onYouTubeIframeAPIReady = () => {
+      isPlayerReady = true;
+      console.log('YouTube Player API ready');
+    };
+
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    // Modal close events
+    if (elements.modalClose) {
+      elements.modalClose.addEventListener('click', () => this.closeModal());
+    }
+
+    // Close modal on outside click
+    if (elements.videoModal) {
+      elements.videoModal.addEventListener('click', (e) => {
+        if (e.target === elements.videoModal) {
+          this.closeModal();
+        }
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isModalOpen()) {
+        this.closeModal();
+      }
+    });
+
+    // Watch now buttons
+    elements.watchNowBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const videoId = btn.getAttribute('data-video-id');
+        this.openVideo(videoId);
+      });
+    });
+
+    // Video card clicks
+    elements.videoCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Don't trigger if clicking on buttons
+        if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+        
+        const videoId = card.getAttribute('data-video-id');
+        this.openVideo(videoId);
+      });
+
+      // Add keyboard support for cards
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const videoId = card.getAttribute('data-video-id');
+          this.openVideo(videoId);
+        }
+      });
+
+      // Make cards focusable
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `Play video: ${card.querySelector('.video-title').textContent}`);
+    });
+  }
+
+  async openVideo(videoId) {
     if (!videoId) return;
-    
-    console.log('▶️ Playing video:', videoId);
+
     this.currentVideoId = videoId;
+    this.openModal();
+
+    // Wait for API to be ready
+    if (!isPlayerReady) {
+      await this.waitForYouTubeAPI();
+    }
+
+    this.createPlayer(videoId);
+  }
+
+  createPlayer(videoId) {
+    // Destroy existing player
+    if (player) {
+      player.destroy();
+    }
+
+    // Create new player
+    player = new YT.Player('youtube-player', {
+      height: '100%',
+      width: '100%',
+      videoId: videoId,
+      playerVars: {
+        autoplay: 1,
+        modestbranding: 1,
+        rel: 0,
+        fs: 1,
+        cc_load_policy: 0,
+        iv_load_policy: 3,
+        autohide: 0
+      },
+      events: {
+        onReady: (event) => {
+          console.log('Player ready for video:', videoId);
+        },
+        onStateChange: (event) => {
+          this.handlePlayerStateChange(event);
+        },
+        onError: (event) => {
+          console.error('YouTube player error:', event.data);
+          this.handlePlayerError();
+        }
+      }
+    });
+  }
+
+  handlePlayerStateChange(event) {
+    // Handle player state changes if needed
+    const states = {
+      '-1': 'unstarted',
+      '0': 'ended',
+      '1': 'playing',
+      '2': 'paused',
+      '3': 'buffering',
+      '5': 'cued'
+    };
     
-    const modal = document.getElementById('videoModal');
-    const player = document.getElementById('videoPlayer');
-    
-    if (modal && player) {
-      // Construct YouTube embed URL with optimal parameters
-      const embedUrl = `https://www.youtube.com/embed/${videoId}?` + 
-        'autoplay=1&' +
-        'rel=0&' +
-        'showinfo=0&' +
-        'iv_load_policy=3&' +
-        'modestbranding=1&' +
-        'playsinline=1&' +
-        'enablejsapi=1';
-      
-      player.src = embedUrl;
-      modal.classList.remove('hidden');
-      
-      // Prevent body scroll
+    console.log('Player state:', states[event.data] || event.data);
+  }
+
+  handlePlayerError() {
+    // Show error message and fallback to YouTube
+    const videoUrl = `https://www.youtube.com/watch?v=${this.currentVideoId}`;
+    window.open(videoUrl, '_blank');
+    this.closeModal();
+  }
+
+  openModal() {
+    if (elements.videoModal) {
+      elements.videoModal.classList.remove('hidden');
+      elements.videoModal.classList.add('active');
       document.body.style.overflow = 'hidden';
       
-      // Focus trap for accessibility
-      this.trapFocus(modal);
-      
-      // Track video play
-      this.trackEvent('video_play', { video_id: videoId });
+      // Focus management
+      elements.modalClose.focus();
     }
   }
 
-  closeVideoModal() {
-    const modal = document.getElementById('videoModal');
-    const player = document.getElementById('videoPlayer');
-    
-    if (modal && player) {
-      // Stop video by clearing src
-      player.src = '';
-      modal.classList.add('hidden');
-      
-      // Restore body scroll
+  closeModal() {
+    if (elements.videoModal) {
+      elements.videoModal.classList.remove('active');
       document.body.style.overflow = '';
       
-      this.currentVideoId = null;
-      console.log('⏹️ Video modal closed');
-    }
-  }
-
-  pauseCurrentVideo() {
-    // Send pause command to YouTube iframe (if API is available)
-    const player = document.getElementById('videoPlayer');
-    if (player && player.contentWindow) {
-      try {
-        player.contentWindow.postMessage(
-          '{"event":"command","func":"pauseVideo","args":""}',
-          'https://www.youtube.com'
-        );
-      } catch (error) {
-        console.log('Could not pause video:', error);
+      // Stop video
+      if (player && typeof player.pauseVideo === 'function') {
+        player.pauseVideo();
       }
-    }
-  }
-
-  openOnYouTube(videoId) {
-    if (!videoId) return;
-    
-    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    
-    // Try to open in YouTube app first (mobile), then fallback to browser
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(userAgent);
-    const isAndroid = /android/.test(userAgent);
-    
-    if (isIOS) {
-      // Try YouTube app URL scheme for iOS
-      const appUrl = `youtube://watch?v=${videoId}`;
-      window.location.href = appUrl;
       
-      // Fallback to web after delay
       setTimeout(() => {
-        window.open(youtubeUrl, '_blank');
-      }, 500);
-    } else if (isAndroid) {
-      // Try intent URL for Android
-      const intentUrl = `intent://www.youtube.com/watch?v=${videoId}#Intent;package=com.google.android.youtube;scheme=https;end`;
-      window.location.href = intentUrl;
-      
-      // Fallback to web
-      setTimeout(() => {
-        window.open(youtubeUrl, '_blank');
-      }, 500);
-    } else {
-      // Desktop - just open in new tab
-      window.open(youtubeUrl, '_blank');
-    }
-    
-    // Track external link click
-    this.trackEvent('youtube_redirect', { video_id: videoId });
-    
-    console.log('🔗 Redirecting to YouTube:', videoId);
-  }
-
-  /* ============================================
-     THEME HANDLING
-  ============================================ */
-  handleSystemTheme() {
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    mediaQuery.addEventListener('change', (e) => {
-      console.log('🌙 System theme changed to:', e.matches ? 'dark' : 'light');
-      this.updateThemeColor(e.matches);
-    });
-    
-    // Set initial theme color
-    this.updateThemeColor(mediaQuery.matches);
-  }
-
-  updateThemeColor(isDark) {
-    const themeColor = document.querySelector('meta[name="theme-color"]');
-    if (themeColor) {
-      themeColor.content = isDark ? '#1c1c1e' : '#ffffff';
-    }
-  }
-
-  /* ============================================
-     UTILITY FUNCTIONS
-  ============================================ */
-  preloadVideoThumbnails() {
-    // Preload video thumbnails for better UX
-    const thumbnails = document.querySelectorAll('.video-thumbnail img');
-    thumbnails.forEach(img => {
-      if (img.loading !== 'lazy') {
-        const tempImg = new Image();
-        tempImg.src = img.src;
-      }
-    });
-  }
-
-  showToast(message, duration = 3000) {
-    // Remove existing toast
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-      existingToast.remove();
-    }
-
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      bottom: calc(20px + var(--safe-area-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-tertiary);
-      color: var(--text-primary);
-      padding: 12px 20px;
-      border-radius: 25px;
-      font-size: 14px;
-      font-weight: 500;
-      box-shadow: 0 8px 32px var(--shadow-medium);
-      border: 0.5px solid var(--border-primary);
-      z-index: 1001;
-      animation: toastSlideUp 0.3s ease-out;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      max-width: calc(100vw - 40px);
-      text-align: center;
-    `;
-
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes toastSlideUp {
-        from {
-          transform: translate(-50%, 100px);
-          opacity: 0;
+        elements.videoModal.classList.add('hidden');
+        if (player) {
+          player.destroy();
+          player = null;
         }
-        to {
-          transform: translate(-50%, 0);
-          opacity: 1;
-        }
-      }
-      @keyframes toastSlideDown {
-        from {
-          transform: translate(-50%, 0);
-          opacity: 1;
-        }
-        to {
-          transform: translate(-50%, 100px);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    document.body.appendChild(toast);
-
-    // Auto remove toast
-    setTimeout(() => {
-      toast.style.animation = 'toastSlideDown 0.3s ease-out';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.remove();
-        }
-        style.remove();
       }, 300);
-    }, duration);
-  }
-
-  showNetworkStatus(status) {
-    const message = status === 'online' 
-      ? '🟢 Back online' 
-      : '🔴 No internet connection';
-    
-    this.showToast(message, status === 'online' ? 2000 : 5000);
-  }
-
-  trapFocus(element) {
-    const focusableElements = element.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    
-    if (focusableElements.length === 0) return;
-    
-    const firstFocusable = focusableElements[0];
-    const lastFocusable = focusableElements[focusableElements.length - 1];
-    
-    // Focus first element
-    firstFocusable.focus();
-    
-    const handleTab = (e) => {
-      if (e.key === 'Tab') {
-        if (e.shiftKey) {
-          if (document.activeElement === firstFocusable) {
-            e.preventDefault();
-            lastFocusable.focus();
-          }
-        } else {
-          if (document.activeElement === lastFocusable) {
-            e.preventDefault();
-            firstFocusable.focus();
-          }
-        }
-      }
-    };
-    
-    element.addEventListener('keydown', handleTab);
-    
-    // Remove event listener when modal closes
-    const originalClose = this.closeVideoModal.bind(this);
-    this.closeVideoModal = () => {
-      element.removeEventListener('keydown', handleTab);
-      originalClose();
-    };
-  }
-
-  trackEvent(eventName, properties = {}) {
-    // Analytics tracking (replace with your preferred analytics service)
-    if (typeof gtag !== 'undefined') {
-      gtag('event', eventName, properties);
     }
-    
-    console.log('📊 Event tracked:', eventName, properties);
   }
 
-  /* ============================================
-     PERFORMANCE OPTIMIZATION
-  ============================================ */
-  debounce(func, wait) {
+  isModalOpen() {
+    return elements.videoModal && elements.videoModal.classList.contains('active');
+  }
+
+  waitForYouTubeAPI() {
+    return new Promise((resolve) => {
+      const checkAPI = () => {
+        if (window.YT && window.YT.Player) {
+          isPlayerReady = true;
+          resolve();
+        } else {
+          setTimeout(checkAPI, 100);
+        }
+      };
+      checkAPI();
+    });
+  }
+}
+
+// =====================================
+// UTILITY FUNCTIONS
+// =====================================
+
+class Utils {
+  static debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
       const later = () => {
@@ -490,7 +416,7 @@ class DarkKokanApp {
     };
   }
 
-  throttle(func, limit) {
+  static throttle(func, limit) {
     let inThrottle;
     return function() {
       const args = arguments;
@@ -500,122 +426,238 @@ class DarkKokanApp {
         inThrottle = true;
         setTimeout(() => inThrottle = false, limit);
       }
+    };
+  }
+
+  static isOnline() {
+    return navigator.onLine;
+  }
+
+  static isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  static getVideoThumbnail(videoId, quality = 'maxresdefault') {
+    return `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
+  }
+
+  static openYouTubeApp(videoId) {
+    const youtubeAppUrl = `vnd.youtube://${videoId}`;
+    const youtubeWebUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    
+    // Try to open YouTube app first
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = youtubeAppUrl;
+    document.body.appendChild(iframe);
+    
+    // Fallback to web after short delay
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+      window.open(youtubeWebUrl, '_blank');
+    }, 1000);
+  }
+}
+
+// =====================================
+// ANALYTICS & TRACKING
+// =====================================
+
+class Analytics {
+  static trackEvent(eventName, eventData = {}) {
+    // Google Analytics 4 example
+    if (typeof gtag !== 'undefined') {
+      gtag('event', eventName, eventData);
+    }
+    
+    console.log('Analytics Event:', eventName, eventData);
+  }
+
+  static trackVideoPlay(videoId, title) {
+    this.trackEvent('video_play', {
+      video_id: videoId,
+      video_title: title,
+      content_type: 'video'
+    });
+  }
+
+  static trackSubscribeClick() {
+    this.trackEvent('subscribe_click', {
+      source: 'header_button'
+    });
+  }
+
+  static trackPWAInstall() {
+    this.trackEvent('pwa_install', {
+      source: 'install_popup'
+    });
+  }
+
+  static trackThemeChange(theme) {
+    this.trackEvent('theme_change', {
+      theme: theme
+    });
+  }
+}
+
+// =====================================
+// PERFORMANCE MONITORING
+// =====================================
+
+class Performance {
+  static init() {
+    // Monitor loading performance
+    window.addEventListener('load', () => {
+      const loadTime = performance.now();
+      console.log('Page load time:', Math.round(loadTime), 'ms');
+      
+      // Track Core Web Vitals if supported
+      this.trackWebVitals();
+    });
+  }
+
+  static trackWebVitals() {
+    // Largest Contentful Paint
+    if ('web-vitals' in window) {
+      import('https://unpkg.com/web-vitals@3/dist/web-vitals.js').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+        getCLS(console.log);
+        getFID(console.log);
+        getFCP(console.log);
+        getLCP(console.log);
+        getTTFB(console.log);
+      });
     }
   }
 }
 
-/* ============================================
-   GLOBAL FUNCTIONS (for HTML onclick handlers)
-============================================ */
-window.playVideo = function(videoId) {
-  if (window.darkKokanApp) {
-    window.darkKokanApp.playVideo(videoId);
-  }
-};
+// =====================================
+// SERVICE WORKER REGISTRATION
+// =====================================
 
-window.openOnYouTube = function(videoId) {
-  if (window.darkKokanApp) {
-    window.darkKokanApp.openOnYouTube(videoId);
+class ServiceWorkerManager {
+  static async init() {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('Service Worker registered:', registration);
+        
+        // Listen for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New content available
+              console.log('New content available, reload to update');
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Service Worker registration failed:', error);
+      }
+    }
   }
-};
-
-window.closeVideoModal = function() {
-  if (window.darkKokanApp) {
-    window.darkKokanApp.closeVideoModal();
-  }
-};
-
-/* ============================================
-   INITIALIZE APP WHEN DOM IS READY
-============================================ */
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-  initializeApp();
 }
 
-function initializeApp() {
-  // Initialize the main app
-  window.darkKokanApp = new DarkKokanApp();
-  
-  // Service Worker registration
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('✅ ServiceWorker registered:', registration.scope);
-      })
-      .catch(error => {
-        console.log('❌ ServiceWorker registration failed:', error);
-      });
-  }
-  
-  // Initialize intersection observer for lazy loading enhancements
-  if ('IntersectionObserver' in window) {
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.classList.add('loaded');
-          observer.unobserve(img);
-        }
-      });
+// =====================================
+// ERROR HANDLING
+// =====================================
+
+class ErrorHandler {
+  static init() {
+    // Global error handler
+    window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error);
+      this.logError(event.error);
     });
+
+    // Promise rejection handler
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      this.logError(event.reason);
+    });
+  }
+
+  static logError(error) {
+    // Send error to logging service
+    console.error('Error logged:', error);
+  }
+}
+
+// =====================================
+// APPLICATION INITIALIZATION
+// =====================================
+
+class App {
+  constructor() {
+    this.themeManager = null;
+    this.pwaManager = null;
+    this.playerManager = null;
+  }
+
+  init() {
+    // Initialize core components
+    this.themeManager = new ThemeManager();
+    this.pwaManager = new PWAManager();
+    this.playerManager = new YouTubePlayerManager();
     
-    document.querySelectorAll('.video-thumbnail img').forEach(img => {
-      imageObserver.observe(img);
+    // Initialize utilities
+    Performance.init();
+    ErrorHandler.init();
+    ServiceWorkerManager.init();
+    
+    // Bind global events
+    this.bindGlobalEvents();
+    
+    console.log('Dark Kokan App initialized successfully');
+  }
+
+  bindGlobalEvents() {
+    // Subscribe button analytics
+    if (elements.subscribeBtn) {
+      elements.subscribeBtn.addEventListener('click', () => {
+        Analytics.trackSubscribeClick();
+      });
+    }
+
+    // Network status
+    window.addEventListener('online', () => {
+      console.log('Connection restored');
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('Connection lost');
+    });
+
+    // Visibility change (tab switching)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.playerManager.isModalOpen()) {
+        // Pause video when tab becomes hidden
+        if (player && typeof player.pauseVideo === 'function') {
+          player.pauseVideo();
+        }
+      }
     });
   }
-  
-  console.log('🎬 Dark Kokan app fully initialized!');
 }
 
-/* ============================================
-   ERROR HANDLING
-============================================ */
-window.addEventListener('error', (event) => {
-  console.error('🚨 Global error:', event.error);
-  
-  // Show user-friendly error message
-  if (window.darkKokanApp) {
-    window.darkKokanApp.showToast('Something went wrong. Please refresh the page.');
-  }
-});
+// =====================================
+// START APPLICATION
+// =====================================
 
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('🚨 Unhandled promise rejection:', event.reason);
-  event.preventDefault();
-});
-
-/* ============================================
-   PERFORMANCE MONITORING
-============================================ */
-if ('performance' in window) {
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      const perfData = performance.getEntriesByType('navigation')[0];
-      console.log('⚡ Page load performance:', {
-        domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
-        loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
-        totalTime: perfData.loadEventEnd - perfData.fetchStart
-      });
-    }, 0);
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.init();
   });
+} else {
+  const app = new App();
+  app.init();
 }
 
-/* ============================================
-   ADDITIONAL CSS FOR JS-GENERATED ELEMENTS
-============================================ */
-const additionalStyles = `
-  .loaded {
-    animation: imageLoaded 0.3s ease-out;
-  }
-  
-  @keyframes imageLoaded {
-    from { opacity: 0.8; }
-    to { opacity: 1; }
-  }
-`;
-
-const styleSheet = document.createElement('style');
-styleSheet.textContent = additionalStyles;
-document.head.appendChild(styleSheet);
+// Export for external use
+window.DarkKokanApp = {
+  Utils,
+  Analytics,
+  Performance
+};

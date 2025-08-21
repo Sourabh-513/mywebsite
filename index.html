@@ -200,32 +200,48 @@
 
         <!-- Other content above... -->
     
-    <!-- PropellerAds - Easy Integration -->
-    <script>
-      // Wait 15 seconds after page loads, then show ad
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          // Only show if user has scrolled (meaning they're engaged)
-          if (window.scrollY > 50 || document.querySelector('.video-card')) {
-            (function(d,z,s){
-              s.src='https://'+d+'/401/'+z;
-              try{(document.body||document.documentElement).appendChild(s)}catch(e){}
-            })('groleegni.net',9749067,document.createElement('script'));
-          }
-        }, 15000); // 15 second delay
-      });
-    </script>
+  <script>
+// Track video clicks and load ad after 2nd click
+let videoClickCount = 0;
+let adLoaded = false;
 
+// Wait for page to load
+window.addEventListener('load', function() {
+  // Find all video cards
+  const videoCards = document.querySelectorAll('.video-card');
+  
+  // Add click listener to each video card
+  videoCards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      videoClickCount++;
+      console.log('Video clicked. Count:', videoClickCount);
+      
+      // Load ad after 2nd click (and only once)
+      if (videoClickCount === 2 && !adLoaded) {
+        console.log('Loading ad after 2nd video click...');
+        loadProppellerAd();
+        adLoaded = true;
+      }
+    });
+  });
+});
 
-
-    <script>
-setTimeout(function() {
+// Function to load the PropellerAds
+function loadProppellerAd() {
   (function(d,z,s){
     s.src='https://'+d+'/401/'+z;
-    try{(document.body||document.documentElement).appendChild(s)}catch(e){}
+    try{
+      (document.body||document.documentElement).appendChild(s);
+    }catch(e){
+      console.log('Ad load error:', e);
+    }
   })('groleegni.net',9749067,document.createElement('script'));
-}, 30000); // 30 seconds delay
+}
 </script>
+
+
+
+  
 
     
   </body>

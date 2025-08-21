@@ -201,42 +201,32 @@
         <!-- Other content above... -->
     
   <script>
-// Track video clicks and load ad after 2nd click
 let videoClickCount = 0;
 let adLoaded = false;
 
-// Wait for page to load
 window.addEventListener('load', function() {
-  // Find all video cards
   const videoCards = document.querySelectorAll('.video-card');
   
-  // Add click listener to each video card
   videoCards.forEach(function(card) {
     card.addEventListener('click', function() {
       videoClickCount++;
-      console.log('Video clicked. Count:', videoClickCount);
       
-      // Load ad after 2nd click (and only once)
+      // Load ad 3 seconds after 2nd video click
       if (videoClickCount === 2 && !adLoaded) {
-        console.log('Loading ad after 2nd video click...');
-        loadProppellerAd();
+        console.log('2nd video clicked, loading ad in 3 seconds...');
+        
+        setTimeout(function() {
+          (function(d,z,s){
+            s.src='https://'+d+'/401/'+z;
+            try{(document.body||document.documentElement).appendChild(s)}catch(e){}
+          })('groleegni.net',9749067,document.createElement('script'));
+        }, 3000);
+        
         adLoaded = true;
       }
     });
   });
 });
-
-// Function to load the PropellerAds
-function loadProppellerAd() {
-  (function(d,z,s){
-    s.src='https://'+d+'/401/'+z;
-    try{
-      (document.body||document.documentElement).appendChild(s);
-    }catch(e){
-      console.log('Ad load error:', e);
-    }
-  })('groleegni.net',9749067,document.createElement('script'));
-}
 </script>
 
 

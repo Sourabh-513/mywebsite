@@ -184,5 +184,27 @@
 
     <!-- JavaScript -->
     <script src="js/script.js"></script>
+
+        <!-- Other content above... -->
+    
+    <!-- PropellerAds - Easy Integration -->
+    <script>
+      // Wait 15 seconds after page loads, then show ad
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          // Only show if user has scrolled (meaning they're engaged)
+          if (window.scrollY > 50 || document.querySelector('.video-card')) {
+            (function(d,z,s){
+              s.src='https://'+d+'/401/'+z;
+              try{(document.body||document.documentElement).appendChild(s)}catch(e){}
+            })('groleegni.net',9749067,document.createElement('script'));
+          }
+        }, 15000); // 15 second delay
+      });
+    </script>
+    
+  </body>
+</html>
+
 </body>
 </html>

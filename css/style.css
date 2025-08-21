@@ -779,3 +779,49 @@ body {
     border: 1px solid #000;
   }
 }
+
+/* =====================================
+   THEME OVERRIDE SYSTEM (iOS Fix)
+===================================== */
+
+/* Force theme classes as backup */
+.theme-dark,
+body.dark-mode {
+  --bg-primary: #000000 !important;
+  --bg-secondary: #1c1c1e !important;
+  --bg-card: #1c1c1e !important;
+  --text-primary: #ffffff !important;
+  --text-secondary: #8e8e93 !important;
+  --accent-primary: #0a84ff !important;
+  --accent-secondary: #5e5ce6 !important;
+  --border-color: #38383a !important;
+  --overlay-bg: rgba(0, 0, 0, 0.9) !important;
+}
+
+.theme-light,
+body.light-mode {
+  --bg-primary: #ffffff !important;
+  --bg-secondary: #f8f9fa !important;
+  --bg-card: #ffffff !important;
+  --text-primary: #1a1a1a !important;
+  --text-secondary: #6c757d !important;
+  --accent-primary: #007aff !important;
+  --accent-secondary: #5856d6 !important;
+  --border-color: #e9ecef !important;
+  --overlay-bg: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Theme toggle button enhancement */
+.theme-toggle {
+  transition: all var(--transition-base), background-color 0.1s ease !important;
+}
+
+/* Force override system preferences when manual theme is set */
+html[data-theme="light"] {
+  color-scheme: light !important;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark !important;
+}
+

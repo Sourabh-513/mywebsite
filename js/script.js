@@ -33,67 +33,233 @@ const elements = {
 };
 
 // =====================================
-// THEME MANAGEMENT
+// THEME MANAGER (iOS Force Fix)
 // =====================================
 
 class ThemeManager {
   constructor() {
-    this.currentTheme = this.getStoredTheme();
+    // Force override any CSS system detection immediately
+    this.overrideSystemCSS();
     this.init();
   }
 
+  overrideSystemCSS() {
+    // Create a style element to override system theme detection
+    const overrideStyle = document.createElement('style');
+    overrideStyle.id = 'theme-override';
+    overrideStyle.textContent = `
+      /* Force override system theme detection */
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="dark"]) {
+          --bg-primary: #ffffff !important;
+          --bg-secondary: #f8f9fa !important;
+          --bg-card: #ffffff !important;
+          --text-primary: #1a1a1a !important;
+          --text-secondary: #6c757d !important;
+          --border-color: #e9ecef !important;
+          --overlay-bg: rgba(255, 255, 255, 0.95) !important;
+        }
+      }
+    `;
+    document.head.appendChild(overrideStyle);
+  }
+
   init() {
-    this.applyTheme(this.currentTheme);
-    this.updateThemeIcon();
+    // Clear any existing theme first
+    document.documentElement.removeAttribute('data-theme');
+    
+    // Force detection
+    this.currentTheme = this.detectInitialTheme();
+    
+    // Apply immediately with force
+    this.forceApplyTheme(this.currentTheme);
+    this.updateToggleButton();
     this.bindEvents();
+    
+    // Debug log
+    console.log('🎨 Theme System Started:', {
+      detected: this.currentTheme,
+      system: this.getSystemTheme(),
+      stored: this.getStoredTheme(),
+      userAgent: navigator.userAgent.includes('iPhone') ? 'iPhone' : 'Other'
+    });
+  }
+
+  detectInitialTheme() {
+    // Priority 1: Stored user preference
+    const stored = this.getStoredTheme();
+    if (stored) {
+      console.log('📱 Using stored theme:', stored);
+      return stored;
+    }
+
+    // Priority 2: System theme
+    const system = this.getSystemTheme();
+    console.log('🌙 Using system theme:', system);
+    return system;
+  }
+
+  bindEvents() {
+    // Theme toggle button with immediate feedback
+    if (elements.themeToggle) {
+      elements.themeToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleTheme();
+        
+        // Visual feedback
+        elements.themeToggle.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          elements.themeToggle.style.transform = 'scale(1)';
+        }, 150);
+      });
+    }
+
+    // System theme change detection (but only if no stored preference)
+    try {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e) => {
+        if (!this.getStoredTheme()) {
+          const newTheme = e.matches ? 'dark' : 'light';
+          this.currentTheme = newTheme;
+          this.forceApplyTheme(newTheme);
+          this.updateToggleButton();
+        }
+      };
+
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+      } else {
+        mediaQuery.addListener(handleChange);
+      }
+    } catch (error) {
+      console.warn('Media query not supported:', error);
+    }
+  }
+
+  getSystemTheme() {
+    try {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    } catch {
+      return 'light';
+    }
   }
 
   getStoredTheme() {
-    const stored = localStorage.getItem(CONFIG.THEME_STORAGE_KEY);
-    if (stored) return stored;
+    try {
+      const theme = localStorage.getItem(CONFIG.THEME_STORAGE_KEY);
+      return (theme === 'dark' || theme === 'light') ? theme : null;
+    } catch {
+      return null;
+    }
+  }
+
+  forceApplyTheme(theme) {
+    const root = document.documentElement;
     
-    // Check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Remove existing
+    root.removeAttribute('data-theme');
+    root.classList.remove('theme-dark', 'theme-light');
+    
+    // Apply new theme multiple ways for maximum compatibility
+    if (theme === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      root.classList.add('theme-dark');
+      document.body.classList.add('dark-mode');
+      document.body.classList.remove('light-mode');
+    } else {
+      root.setAttribute('data-theme', 'light');
+      root.classList.add('theme-light');
+      document.body.classList.add('light-mode');
+      document.body.classList.remove('dark-mode');
+    }
+
+    // Force browser repaint
+    void root.offsetHeight;
+    
+    // Update CSS custom properties directly as backup
+    this.updateCSSProperties(theme);
+    
+    console.log('🎨 Theme force applied:', theme);
   }
 
-  applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    this.currentTheme = theme;
-    localStorage.setItem(CONFIG.THEME_STORAGE_KEY, theme);
-  }
-
-  updateThemeIcon() {
-    if (elements.themeIcon) {
-      elements.themeIcon.textContent = this.currentTheme === 'dark' ? '☀️' : '🌙';
+  updateCSSProperties(theme) {
+    const root = document.documentElement;
+    
+    if (theme === 'dark') {
+      root.style.setProperty('--bg-primary', '#000000');
+      root.style.setProperty('--bg-secondary', '#1c1c1e');
+      root.style.setProperty('--bg-card', '#1c1c1e');
+      root.style.setProperty('--text-primary', '#ffffff');
+      root.style.setProperty('--text-secondary', '#8e8e93');
+      root.style.setProperty('--accent-primary', '#0a84ff');
+      root.style.setProperty('--border-color', '#38383a');
+      root.style.setProperty('--overlay-bg', 'rgba(0, 0, 0, 0.9)');
+    } else {
+      root.style.setProperty('--bg-primary', '#ffffff');
+      root.style.setProperty('--bg-secondary', '#f8f9fa');
+      root.style.setProperty('--bg-card', '#ffffff');
+      root.style.setProperty('--text-primary', '#1a1a1a');
+      root.style.setProperty('--text-secondary', '#6c757d');
+      root.style.setProperty('--accent-primary', '#007aff');
+      root.style.setProperty('--border-color', '#e9ecef');
+      root.style.setProperty('--overlay-bg', 'rgba(255, 255, 255, 0.95)');
     }
   }
 
   toggleTheme() {
     const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
-    this.applyTheme(newTheme);
-    this.updateThemeIcon();
     
-    // Smooth transition effect
-    document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-    setTimeout(() => {
-      document.body.style.transition = '';
-    }, 300);
+    // Store preference immediately
+    try {
+      localStorage.setItem(CONFIG.THEME_STORAGE_KEY, newTheme);
+    } catch (error) {
+      console.warn('Could not store theme:', error);
+    }
+    
+    // Update and apply
+    this.currentTheme = newTheme;
+    this.forceApplyTheme(newTheme);
+    this.updateToggleButton();
+    
+    // Analytics
+    Analytics.trackThemeChange(newTheme);
+    
+    console.log('🔄 Theme toggled to:', newTheme);
   }
 
-  bindEvents() {
+  updateToggleButton() {
     if (elements.themeToggle) {
-      elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+      const isDark = this.currentTheme === 'dark';
+      elements.themeToggle.textContent = isDark ? '☀️' : '🌙';
+      elements.themeToggle.setAttribute('aria-label', 
+        `Switch to ${isDark ? 'light' : 'dark'} mode`);
+      elements.themeToggle.title = `Currently ${this.currentTheme} mode. Click to switch.`;
+      
+      // Visual indicator
+      elements.themeToggle.style.background = isDark 
+        ? 'rgba(255, 255, 255, 0.1)' 
+        : 'rgba(0, 0, 0, 0.05)';
     }
+  }
 
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!localStorage.getItem(CONFIG.THEME_STORAGE_KEY)) {
-        this.applyTheme(e.matches ? 'dark' : 'light');
-        this.updateThemeIcon();
-      }
-    });
+  getCurrentTheme() {
+    return this.currentTheme;
+  }
+
+  // Force reset for testing
+  reset() {
+    localStorage.removeItem(CONFIG.THEME_STORAGE_KEY);
+    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.classList.remove('theme-dark', 'theme-light');
+    document.body.classList.remove('dark-mode', 'light-mode');
+    location.reload();
   }
 }
+
+
 
 // =====================================
 // PWA INSTALLATION MANAGER (iOS Fixed)

@@ -34,6 +34,17 @@
     <!-- YouTube Player API -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
+
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "1ae2c98a-39ed-4b86-8267-f21a7258c845",
+    });
+  });
+</script>
+
     
 </head>
 <body>

@@ -36,22 +36,14 @@
 
 
     <!-- Onsignal code-->
-     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+ <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  console.log('OneSignal loading on mobile...');
-  
-  await OneSignal.init({
-    appId: "1ae2c98a-39ed-4b86-8267-f21a7258c845",
-    safari_web_id: "web.onesignal.auto.049ba086-b9bb-478c-827f-71a35c67ecc8",
-    allowLocalhostAsSecureOrigin: true,
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "1ae2c98a-39ed-4b86-8267-f21a7258c845",
+    });
   });
-  
-  // Show immediately (mobile-friendly)
-  console.log('Showing notification prompt on mobile...');
-  await OneSignal.Slidedown.promptPush();
-});
 </script>
 
 

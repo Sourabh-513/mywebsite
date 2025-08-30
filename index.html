@@ -4,35 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dark Kokan</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/sections.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <div class="logo-container">
-      <img src="assets/images/logo.png" alt="Dark Kokan" class="logo">
-      <h1 class="brand-name">Dark Kokan</h1>
+    <div class="header-content">
+      <div class="logo-container">
+        <div class="logo">Dark Kokan</div>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#videos">Videos</a></li>
+          <li><a href="#podcasts">Podcasts</a></li>
+        </ul>
+      </nav>
+      <div class="subscribe-btn">
+        <a href="#" class="btn">Subscribe</a>
+      </div>
     </div>
-    <button class="subscribe-btn">Subscribe</button>
   </header>
 
   <main>
-    <!-- Video Section -->
-    <section class="video-section">
-      <!-- Video cards will be dynamically generated here -->
+    <section id="videos" class="videos">
+      <h2>Haunting Videos</h2>
+      <div class="video-grid"></div>
     </section>
 
-    <!-- Podcast Section -->
-    <section class="podcast-section">
-      <!-- Podcast cards will be dynamically generated here -->
+    <section id="podcasts" class="podcasts">
+      <h2>Chilling Podcasts</h2>
+      <div class="podcast-grid"></div>
     </section>
   </main>
 
-  <script src="js/script.js"></script>
-  <script src="js/navigation.js"></script>
+  <footer>
+    <div class="footer-content">
+      <p>&copy; 2023 Dark Kokan. All rights reserved.</p>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <div class="modal" id="videoModal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <img src="" alt="Video Thumbnail" class="modal-thumbnail">
+      <h3 class="modal-title"></h3>
+      <p class="modal-description"></p>
+      <a href="#" class="btn modal-watch-btn">Watch Now</a>
+    </div>
+  </div>
+
+  <div class="modal" id="podcastModal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <img src="" alt="Podcast Cover" class="modal-thumbnail">
+      <h3 class="modal-title"></h3>
+      <p class="modal-description"></p>
+      <a href="#" class="btn modal-listen-btn">Listen Now</a>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

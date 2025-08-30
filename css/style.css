@@ -1,0 +1,112 @@
+/* CSS/style.css */
+
+:root {
+  --background-color: #1C1C1E;
+  --card-background-color: #2C2C2E;
+  --text-color: #FFFFFF;
+  --secondary-text-color: #CCCCCC;
+  --primary-color: #007AFF;
+  --youtube-color: #FF0000;
+  --spotify-color: #1DB954;
+}
+
+.light-mode {
+  --background-color: #FFFFFF;
+  --card-background-color: #F2F2F2;
+  --text-color: #1C1C1E;
+  --secondary-text-color: #666666;
+  --primary-color: #007AFF;
+  --youtube-color: #FF0000;
+  --spotify-color: #1DB954;
+}
+
+/* Reset styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: var(--card-background-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.brand-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.subscribe-btn {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.theme-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--card-background-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  header {
+    padding: 12px;
+  }
+
+  .logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand-name {
+    font-size: 16px;
+  }
+
+  .subscribe-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .theme-toggle-btn {
+    bottom: 12px;
+    right: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
